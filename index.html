@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Señuelos Mape</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #0f172a;
+            --green: #10b981;
+            --money-green: #16a34a;
+        }
+
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text-main); -webkit-tap-highlight-color: transparent; }
+        
+        /* Header renovado con logo */
+        header { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 18px 20px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+        }
+        
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(145deg, #3b82f6, #06b6d4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        .header-logo svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-title span {
+            background: linear-gradient(90deg, #60a5fa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .screen { display: none; padding: 16px; padding-bottom: 120px; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Tarjetas de Inventario */
+        .card { border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.01); display: flex; flex-direction: column; background: var(--card); border: 1px solid #f1f5f9; }
+        
+        .theme-Blanco { border-left: 5px solid #cbd5e1; }
+        .theme-Azul { background: #f0f9ff; border-left: 5px solid #3b82f6; }
+        .theme-Verde-Fluor { background: #f7fee7; border-left: 5px solid #84cc16; }
+        .theme-Rosa { background: #fdf2f8; border-left: 5px solid #ec4899; }
+        .theme-Blanco-Cabeza-Roja { background: #fef2f2; border-left: 5px solid #ef4444; }
+
+        .badge { padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 15px; display: inline-block; }
+        .badge-Blanco { background: #e2e8f0; color: #334155; }
+        .badge-Azul { background: #3b82f6; color: #ffffff; }
+        .badge-Verde-Fluor { background: #84cc16; color: #ffffff; }
+        .badge-Rosa { background: #ec4899; color: #ffffff; }
+        .badge-Blanco-Cabeza-Roja { background: #ef4444; color: #ffffff; }
+
+        .row-layout { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .stock-name { font-weight: 700; font-size: 16px; color: var(--text-main); }
+        
+        .action-container { display: flex; gap: 14px; align-items: center; }
+        
+        /* Botón de edición incoloro */
+        .btn-edit-icon { background: none; border: none; cursor: pointer; color: var(--text-muted); opacity: 0.5; padding: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-edit-icon:hover { opacity: 1; color: var(--text-main); }
+        .btn-edit-icon:active { transform: scale(0.9); }
+
+        /* Botón Flotante (FAB) */
+        .fab-btn { position: fixed; bottom: 85px; right: 20px; background-color: var(--text-main); color: white; padding: 16px 24px; border-radius: 50px; font-size: 15px; font-weight: 700; border: none; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.2); cursor: pointer; z-index: 50; transition: transform 0.2s, box-shadow 0.2s; }
+        .fab-btn:active { transform: scale(0.95); }
+        
+        .btn-lote { background: #f1f5f9; color: var(--text-main); border: none; width: 100%; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 700; margin-bottom: 20px; cursor: pointer; transition: background 0.2s; }
+        .btn-lote:active { background: #e2e8f0; }
+
+        /* Tarjeta de Finanzas Premium */
+        .finanzas-card { background: linear-gradient(145deg, #ffffff, #f8fafc); border-radius: 20px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01); border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; }
+        .finanzas-header { display: flex; justify-content: space-between; align-items: center; }
+        .finanzas-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .btn-toggle-eye { background: #f1f5f9; border: none; border-radius: 50%; width: 34px; height: 34px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+        .btn-toggle-eye:hover { background: #e2e8f0; color: var(--text-main); }
+        .btn-toggle-eye:active { transform: scale(0.9); }
+        
+        /* --- ESTILOS DE DINERO MODIFICADOS --- */
+        .finanzas-amount { 
+            font-size: 42px; 
+            font-weight: 800; 
+            color: var(--text-main); 
+            letter-spacing: -1px; 
+            line-height: 1.1; 
+            margin-top: 4px; 
+            opacity: 0.3; /* Opacidad baja por defecto (oculto) */
+            transition: all 0.3s ease; /* Transición suave */
+        }
+        .finanzas-amount.visible { 
+            color: var(--money-green); 
+            opacity: 1; /* Opacidad total al estar visible */
+        }
+        .finanzas-currency { font-size: 24px; font-weight: 600; }
+        .finanzas-amount.visible .finanzas-currency { color: var(--money-green); opacity: 0.7; }
+
+        .history-card { border-left: 4px solid var(--text-main); }
+        .history-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        
+        .history-lures-compact { font-size: 14px; line-height: 1.6; margin-bottom: 6px; }
+        .history-price { font-size: 20px; font-weight: 800; color: var(--text-main); text-align: right; margin-top: 8px; }
+        .history-desc { font-size: 13px; color: #64748b; background: #f8fafc; padding: 10px 12px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #cbd5e1; font-style: italic; font-weight: 500; }
+
+        /* Navegación */
+        nav { position: fixed; bottom: 0; width: 100%; display: flex; background-color: var(--card); border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 20px rgba(0,0,0,0.02); z-index: 40; }
+        nav button { flex: 1; padding: 18px; border: none; background: none; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        nav button.active { color: var(--accent); position: relative; }
+        nav button.active::after { content: ''; position: absolute; top: 0; left: 40%; width: 20%; height: 3px; background: var(--accent); border-radius: 0 0 4px 4px; }
+
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 100; opacity: 0; transition: opacity 0.2s; }
+        .modal { background: var(--card); padding: 24px; border-radius: 24px; width: 90%; max-width: 360px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Clases para animación del modal */
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-overlay.show .modal { transform: translateY(0); }
+
+        .modal h3 { margin-top: 0; font-size: 18px; font-weight: 800; margin-bottom: 24px; text-align: center; color: var(--text-main); }
+        
+        .cart-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; font-weight: 600; font-size: 14px; background: #f8fafc; border: 1px solid #f1f5f9; }
+        .stepper { display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 4px 10px; border-radius: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .stepper button { border: none; background: none; font-size: 18px; font-weight: 600; color: var(--text-main); cursor: pointer; width: 24px; }
+        .stepper span { min-width: 20px; text-align: center; font-size: 15px; font-weight: 700; }
+
+        .summary-box { background: #f8fafc; padding: 20px; border-radius: 16px; margin-top: 24px; border: 1px solid #e2e8f0; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 700; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #cbd5e1; color: var(--text-main); }
+        
+        .modal label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: block; margin-bottom: 8px; }
+        .modal input { width: 100%; padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: #ffffff; color: var(--text-main); font-weight: 600; margin-bottom: 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .modal input:focus { border-color: var(--text-main); box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05); }
+        
+        .modal-btns { display: flex; gap: 12px; margin-top: 16px; }
+        .btn-cancel { background: #f1f5f9; color: var(--text-muted); flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-cancel:hover { background: #e2e8f0; color: var(--text-main); }
+        .btn-confirm { background: var(--text-main); color: white; flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+        .btn-confirm:active { opacity: 0.8; }
+        
+        .btn-modal-delete { display: none; background: #fff1f2; border: 1px solid #ffe4e6; color: #e11d48; font-weight: 600; margin-top: 24px; width: 100%; text-align: center; cursor: pointer; font-size: 14px; border-radius: 12px; padding: 12px 0; transition: background 0.2s; }
+        .btn-modal-delete:active { background: #ffe4e6; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M17 12C17 15.5 13.5 18 9 18C4.5 18 2 12 2 12C2 12 4.5 6 9 6C13.5 6 17 8.5 17 12Z" />
+                <path d="M17 12L22 7V17L17 12Z" />
+                <circle cx="13" cy="10" r="1" fill="white" stroke="none" />
+            </svg>
+        </div>
+        <div class="header-title">Señuelos <span>Mape</span></div>
+    </header>
+
+    <div id="screen-stock" class="screen active">
+        <div id="stock-list"></div>
+        <button class="fab-btn" onclick="abrirModalVenta()">Nueva Venta +</button>
+    </div>
+
+    <div id="screen-historial" class="screen">
+        <div class="finanzas-card">
+            <div class="finanzas-header">
+                <span class="finanzas-title">Ingresos Totales</span>
+                <button class="btn-toggle-eye" onclick="toggleDinero()" id="btn-ojo-recaudacion" title="Ocultar/Mostrar saldo">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                </button>
+            </div>
+            <div class="finanzas-amount" id="dinero-total">&middot;&middot;&middot; <span class="finanzas-currency">€</span></div>
+        </div>
+        
+        <div id="history-list"></div>
+    </div>
+
+    <nav>
+        <button id="tab-stock" class="active" onclick="cambiarPantalla('stock')">Inventario</button>
+        <button id="tab-historial" onclick="cambiarPantalla('historial')">Ventas</button>
+    </nav>
+
+    <div id="modal-venta" class="modal-overlay">
+        <div class="modal">
+            <h3 id="modal-venta-title">Nueva Venta</h3>
+            
+            <button class="btn-lote" onclick="anadirLoteEntero()">⚡ Añadir Lote Entero</button>
+
+            <div id="lista-carrito"></div>
+
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span>Unidades Totales</span>
+                    <span id="modal-total-peces" style="font-size: 22px;">0</span>
+                </div>
+                <label>Precio Final Recaudado (€)</label>
+                <input type="number" id="input-precio" value="0.00" step="0.50">
+            </div>
+
+            <label style="margin-top: 16px;">Descripción / Notas (Opcional)</label>
+            <input type="text" id="input-desc" placeholder="Ej. Wallapop, regalo, descuento...">
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="cerrarModal('modal-venta')">Cancelar</button>
+                <button class="btn-confirm" onclick="guardarVenta()">Guardar</button>
+            </div>
+
+            <button id="btn-eliminar-venta" class="btn-modal-delete" onclick="eliminarVentaActual()">Eliminar registro</button>
+        </div>
+    </div>
+
+    <div id="modal-stock" class="modal-overlay">
+        <div class="modal">
+            <h3>Ajustar Inventario</h3>
+            <div id="stock-color-nombre" style="font-size:20px; font-weight:800; margin-bottom:24px; text-align:center;"></div>
+            
+            <label>Unidades disponibles reales</label>
+            <input type="number" id="input-stock-manual" min="0">
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="cerrarModal('modal-stock')">Cancelar</button>
+                <button class="btn-confirm" onclick="guardarStockManual()">Actualizar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const colores = ["Blanco", "Azul", "Verde Fluor", "Rosa", "Blanco Cabeza Roja"];
+        
+        function getCssClass(color) { return color.replace(/ /g, '-'); }
+        
+        const hexColores = {
+            "Blanco": "#64748b",
+            "Azul": "#2563eb",
+            "Verde Fluor": "#65a30d",
+            "Rosa": "#db2777",
+            "Blanco Cabeza Roja": "#dc2626"
+        };
+
+        const svgLapiz = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>`;
+
+        const svgOjoCerrado = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>`;
+        const svgOjoAbierto = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>`;
+
+        let inventario = JSON.parse(localStorage.getItem('inventarioV4')) || { "Blanco": 100, "Azul": 100, "Verde Fluor": 100, "Rosa": 100, "Blanco Cabeza Roja": 100 };
+        let historial = JSON.parse(localStorage.getItem('historialV4')) || [];
+        
+        let carritoActual = {};
+        let ventaEditandoId = null; 
+        let colorEditandoStock = null; 
+        let saldoVisible = false; 
+        let ingresosCalculados = 0;
+
+        function actualizarPantallas() {
+            const stockDiv = document.getElementById('stock-list');
+            stockDiv.innerHTML = '';
+            colores.forEach(color => {
+                let cssClass = getCssClass(color);
+                stockDiv.innerHTML += `
+                    <div class="card theme-${cssClass}">
+                        <div class="row-layout">
+                            <span class="stock-name">${color}</span>
+                            <div class="action-container">
+                                <span class="badge badge-${cssClass}">${inventario[color]} ud</span>
+                                <button class="btn-edit-icon" onclick="abrirModalStock('${color}')">${svgLapiz}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const historyDiv = document.getElementById('history-list');
+            historyDiv.innerHTML = '';
+            ingresosCalculados = 0;
+
+            if (historial.length === 0) {
+                historyDiv.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:14px; font-weight:600; margin-top:40px;">No hay registros de ventas todavía.</div>';
+            } else {
+                let historialInvertido = [...historial].reverse();
+                historialInvertido.forEach(venta => {
+                    ingresosCalculados += parseFloat(venta.precio);
+                    
+                    let arrayColores = [];
+                    for(let c in venta.detalles) {
+                        if(venta.detalles[c] > 0) {
+                            arrayColores.push(`<span style="color: ${hexColores[c]}; font-weight: 800;">${c} <span style="opacity:0.6">x</span>${venta.detalles[c]}</span>`);
+                        }
+                    }
+                    let desgloseCompacto = arrayColores.join(', ');
+                    let descHtml = venta.desc ? `<div class="history-desc">${venta.desc}</div>` : '';
+                    
+                    historyDiv.innerHTML += `
+                        <div class="card history-card">
+                            <div class="history-top">
+                                <span>${venta.fecha}</span>
+                                <button class="btn-edit-icon" onclick="abrirModalVenta(${venta.id})">${svgLapiz}</button>
+                            </div>
+                            <div class="history-lures-compact">${desgloseCompacto}</div>
+                            ${descHtml}
+                            <div class="history-price">${parseFloat(venta.precio).toFixed(2)} €</div>
+                        </div>
+                    `;
+                });
+            }
+
+            renderizarSeccionIngresos();
+
+            localStorage.setItem('inventarioV4', JSON.stringify(inventario));
+            localStorage.setItem('historialV4', JSON.stringify(historial));
+        }
+
+        function renderizarSeccionIngresos() {
+            const divTotal = document.getElementById('dinero-total');
+            const btnOjo = document.getElementById('btn-ojo-recaudacion');
+            
+            if (saldoVisible) {
+                divTotal.innerHTML = `${ingresosCalculados.toFixed(2)} <span class="finanzas-currency">€</span>`;
+                divTotal.classList.add('visible');
+                btnOjo.innerHTML = svgOjoAbierto;
+            } else {
+                divTotal.innerHTML = `&middot;&middot;&middot; <span class="finanzas-currency">€</span>`;
+                divTotal.classList.remove('visible');
+                btnOjo.innerHTML = svgOjoCerrado;
+            }
+        }
+
+        function toggleDinero() { 
+            saldoVisible = !saldoVisible;
+            renderizarSeccionIngresos();
+        }
+
+        function inicializarCarrito(id = null) {
+            carritoActual = { "Blanco": 0, "Azul": 0, "Verde Fluor": 0, "Rosa": 0, "Blanco Cabeza Roja": 0 };
+            if(id) {
+                let v = historial.find(x => x.id === id);
+                for(let c in v.detalles) carritoActual[c] = v.detalles[c];
+            }
+            renderizarCarritoModal();
+            recalcularTotales();
+        }
+
+        function renderizarCarritoModal() {
+            const lista = document.getElementById('lista-carrito');
+            lista.innerHTML = '';
+            colores.forEach(color => {
+                let cssClass = getCssClass(color);
+                lista.innerHTML += `
+                    <div class="cart-row">
+                        <span style="color: ${hexColores[color]}; font-weight:700;">${color}</span>
+                        <div class="stepper">
+                            <button onclick="cambiarCantidad('${color}', -1)">-</button>
+                            <span>${carritoActual[color]}</span>
+                            <button onclick="cambiarCantidad('${color}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function cambiarCantidad(color, delta) {
+            if (carritoActual[color] + delta >= 0) {
+                carritoActual[color] += delta;
+                renderizarCarritoModal();
+                recalcularTotales();
+            }
+        }
+
+        function anadirLoteEntero() {
+            colores.forEach(c => carritoActual[c] += 1);
+            renderizarCarritoModal();
+            recalcularTotales();
+        }
+
+        function recalcularTotales() {
+            let totalQty = 0;
+            for(let c in carritoActual) totalQty += carritoActual[c];
+            document.getElementById('modal-total-peces').innerText = totalQty;
+            document.getElementById('input-precio').value = (totalQty * 3).toFixed(2);
+        }
+
+        function abrirModalVenta(id = null) {
+            ventaEditandoId = id;
+            const modal = document.getElementById('modal-venta');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+            
+            const btnEliminar = document.getElementById('btn-eliminar-venta');
+            
+            if (id) {
+                document.getElementById('modal-venta-title').innerText = "Editar Registro";
+                btnEliminar.style.display = 'block';
+                inicializarCarrito(id);
+                let v = historial.find(x => x.id === id);
+                document.getElementById('input-precio').value = parseFloat(v.precio).toFixed(2);
+                document.getElementById('input-desc').value = v.desc || "";
+            } else {
+                document.getElementById('modal-venta-title').innerText = "Nueva Venta";
+                btnEliminar.style.display = 'none';
+                inicializarCarrito();
+                document.getElementById('input-desc').value = "";
+            }
+        }
+
+        function cerrarModal(idModal) { 
+            const modal = document.getElementById(idModal);
+            modal.classList.remove('show');
+            setTimeout(() => { modal.style.display = 'none'; }, 200);
+        }
+
+        function aplicarStock(detallesCarrito, sumar = false) {
+            for(let c in detallesCarrito) {
+                let cant = detallesCarrito[c];
+                if (cant > 0) inventario[c] += sumar ? cant : -cant;
+            }
+        }
+
+        function guardarVenta() {
+            let totalQty = 0;
+            for(let c in carritoActual) totalQty += carritoActual[c];
+
+            if (totalQty === 0) return alert("Por favor, añade al menos una unidad.");
+
+            const precio = document.getElementById('input-precio').value;
+            const desc = document.getElementById('input-desc').value;
+
+            let ventaOriginal = null;
+            if (ventaEditandoId) {
+                ventaOriginal = historial.find(x => x.id === ventaEditandoId);
+                aplicarStock(ventaOriginal.detalles, true);
+            }
+
+            let hayStock = true;
+            for(let c in carritoActual) {
+                if(carritoActual[c] > inventario[c]) hayStock = false;
+            }
+
+            if (hayStock) {
+                aplicarStock(carritoActual, false);
+                const fechaActual = ventaOriginal ? ventaOriginal.fecha : new Date().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+                let detallesGuardar = JSON.parse(JSON.stringify(carritoActual));
+
+                const nuevaVenta = {
+                    id: ventaEditandoId ? ventaEditandoId : Date.now(),
+                    fecha: fechaActual,
+                    detalles: detallesGuardar,
+                    totalPeces: totalQty,
+                    precio: precio,
+                    desc: desc
+                };
+
+                if (ventaEditandoId) {
+                    let index = historial.findIndex(x => x.id === ventaEditandoId);
+                    historial[index] = nuevaVenta;
+                } else {
+                    historial.push(nuevaVenta);
+                }
+
+                actualizarPantallas();
+                cerrarModal('modal-venta');
+            } else {
+                if (ventaOriginal) aplicarStock(ventaOriginal.detalles, false);
+                alert("Unidades insuficientes en el inventario.");
+            }
+        }
+
+        function eliminarVentaActual() {
+            if(ventaEditandoId) {
+                if(confirm("¿Seguro que deseas eliminar este registro?")) {
+                    let index = historial.findIndex(x => x.id === ventaEditandoId);
+                    aplicarStock(historial[index].detalles, true);
+                    historial.splice(index, 1);
+                    actualizarPantallas();
+                    cerrarModal('modal-venta');
+                }
+            }
+        }
+
+        function abrirModalStock(color) {
+            colorEditandoStock = color;
+            const titleBox = document.getElementById('stock-color-nombre');
+            titleBox.innerText = color;
+            titleBox.style.color = hexColores[color];
+            
+            document.getElementById('input-stock-manual').value = inventario[color];
+            
+            const modal = document.getElementById('modal-stock');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function guardarStockManual() {
+            let nuevoStock = parseInt(document.getElementById('input-stock-manual').value);
+            if (!isNaN(nuevoStock) && nuevoStock >= 0) {
+                inventario[colorEditandoStock] = nuevoStock;
+                actualizarPantallas();
+                cerrarModal('modal-stock');
+            } else {
+                alert("Introduce un número válido.");
+            }
+        }
+
+        function cambiarPantalla(pantalla) {
+            document.getElementById('screen-stock').classList.remove('active');
+            document.getElementById('screen-historial').classList.remove('active');
+            document.getElementById('tab-stock').classList.remove('active');
+            document.getElementById('tab-historial').classList.remove('active');
+            
+            document.getElementById('screen-' + pantalla).classList.add('active');
+            document.getElementById('tab-' + pantalla).classList.add('active');
+        }
+
+        actualizarPantallas();
+    </script>
+</body>
+</html>
